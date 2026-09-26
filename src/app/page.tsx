@@ -10,7 +10,7 @@ const ACCIONES = [
   { href: "/productos", label: "Ver productos", icon: Package, desc: "Catálogo turístico — fuente de verdad de la IA" },
   { href: "/leads", label: "Gestionar leads", icon: Users, desc: "CRM con lead scoring HOT/WARM/COLD explicado" },
   { href: "/analytics", label: "Analizar resultados", icon: BarChart3, desc: "Próximamente" },
-  { href: "/summer-brain", label: "Preguntarle a Summer AI", icon: Brain, desc: "Próximamente" },
+  { href: "/summer-brain", label: "Ver resumen de hoy", icon: Brain, desc: "Leads prioritarios, alertas y qué producto impulsar" },
 ];
 
 export default function DashboardPage() {

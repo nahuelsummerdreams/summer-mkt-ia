@@ -119,7 +119,9 @@ export function generateScriptTemplate(input: ScriptTemplateInput): Scene[] {
       camara: "Handheld natural",
     },
     {
-      dialogo: mensaje,
+      dialogo:
+        mensaje.trim() ||
+        (datos ? `Te traemos una propuesta para viajar a ${datos.destino}.` : "Te traemos una propuesta pensada para vos."),
       accion: "Presenta el producto con entusiasmo, gesticula",
       plano: "Plano medio",
       camara: "Steady",

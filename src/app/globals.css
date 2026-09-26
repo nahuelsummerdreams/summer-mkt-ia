@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0a1224;
+
+  /* SUMMER AI — mismo sistema de marca que Summer Dreams (Seller Hub) */
+  --sm-navy: #06101f;
+  --sm-navy-800: #0b1a30;
+  --sm-navy-700: #12233d;
+  --sm-green: #16a34a;
+  --sm-green-dark: #0f7a38;
+  --sm-green-light: #e8f8ee;
+  --sm-gray-50: #f7f8fa;
+  --sm-gray-100: #eef0f3;
+  --sm-gray-200: #e2e5ea;
+  --sm-gray-400: #9aa3b2;
+  --sm-gray-600: #5b6472;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+
+  --color-navy: var(--sm-navy);
+  --color-navy-800: var(--sm-navy-800);
+  --color-navy-700: var(--sm-navy-700);
+  --color-green: var(--sm-green);
+  --color-green-dark: var(--sm-green-dark);
+  --color-green-light: var(--sm-green-light);
+  --color-gray-50: var(--sm-gray-50);
+  --color-gray-100: var(--sm-gray-100);
+  --color-gray-200: var(--sm-gray-200);
+  --color-gray-400: var(--sm-gray-400);
+  --color-gray-600: var(--sm-gray-600);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sm-gray-200) transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-in {
+  animation: page-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

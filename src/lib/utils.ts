@@ -43,6 +43,14 @@ export function daysSince(iso: string) {
   return Math.floor((Date.now() - then) / (1000 * 60 * 60 * 24));
 }
 
+export function daysUntil(iso: string) {
+  const target = new Date(iso + "T00:00:00").getTime();
+  if (!Number.isFinite(target)) return null;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.round((target - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 export function whatsAppLink(phone: string | undefined, message: string) {
   const base = phone ? `https://wa.me/${phone.replace(/\D/g, "")}` : "https://wa.me/";
   return `${base}?text=${encodeURIComponent(message)}`;

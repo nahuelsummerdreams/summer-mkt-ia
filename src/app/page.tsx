@@ -6,7 +6,7 @@ import { scoreLead } from "@/lib/lead-scoring";
 
 const ACCIONES = [
   { href: "/content-studio", label: "Crear contenido", icon: Sparkles, desc: "Hooks, Reels, Stories y carruseles a partir de un producto real" },
-  { href: "/campanas", label: "Crear campaña", icon: Rocket, desc: "Próximamente" },
+  { href: "/campanas", label: "Crear campaña", icon: Rocket, desc: "Objetivo, fecha límite y presupuesto → estrategia, KPIs y calendario" },
   { href: "/productos", label: "Ver productos", icon: Package, desc: "Catálogo turístico — fuente de verdad de la IA" },
   { href: "/leads", label: "Gestionar leads", icon: Users, desc: "CRM con lead scoring HOT/WARM/COLD explicado" },
   { href: "/analytics", label: "Analizar resultados", icon: BarChart3, desc: "Próximamente" },

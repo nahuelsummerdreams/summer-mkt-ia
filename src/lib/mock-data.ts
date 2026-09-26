@@ -1,4 +1,4 @@
-import type { Product } from "./types";
+import type { Lead, Product } from "./types";
 
 // Catálogo mock de arranque para SUMMER AI. Mismo espíritu que
 // `desktop-tutorial/src/lib/mock-data.ts`: datos desacoplados de la UI,
@@ -76,5 +76,120 @@ export const products: Product[] = [
     imagenPortada: "/productos/punta-cana-premium.jpg",
     publicoObjetivo: ["parejas", "premium"],
     estado: "activo",
+  },
+];
+
+// Las interacciones se generan relativas a "ahora" para que el ejemplo de
+// Lead Scoring (señal de recencia) sea realista corriendo la app en
+// cualquier fecha, en vez de quedar pegado a una fecha fija del pasado.
+function daysAgoIso(dias: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - dias);
+  return d.toISOString();
+}
+
+export const leads: Lead[] = [
+  {
+    id: "lead-sofia",
+    nombre: "Sofía",
+    apellido: "Martínez",
+    telefono: "5491122334455",
+    email: "sofia.martinez@example.com",
+    origen: "instagram",
+    instagram: "@sofimartinez",
+    destinoInteres: "Florianópolis",
+    fechaViaje: "2026-01-20",
+    cantidadPasajeros: 4,
+    presupuesto: 900000,
+    productoId: "brasil-floripa",
+    pidioMediosPago: true,
+    estado: "cotizando",
+    vendedor: "Julieta Paz",
+    ultimaInteraccion: daysAgoIso(0),
+    proximaAccion: "Enviar cotización formal con medios de pago",
+    notas: "Va con 3 amigas, ya vieron el hotel y preguntaron por seña.",
+    createdAt: daysAgoIso(3),
+  },
+  {
+    id: "lead-valentina",
+    nombre: "Valentina",
+    apellido: "Ruiz",
+    telefono: "5491133445566",
+    email: "valen.ruiz@example.com",
+    origen: "whatsapp",
+    destinoInteres: "Punta Cana",
+    fechaViaje: "2026-02-05",
+    cantidadPasajeros: 2,
+    presupuesto: 1450000,
+    productoId: "caribe-punta-cana",
+    pidioMediosPago: true,
+    estado: "negociacion",
+    vendedor: "Julieta Paz",
+    ultimaInteraccion: daysAgoIso(1),
+    proximaAccion: "Confirmar disponibilidad de habitación doble",
+    notas: "Viaje de aniversario, pidió factura A.",
+    createdAt: daysAgoIso(8),
+  },
+  {
+    id: "lead-lucas",
+    nombre: "Lucas",
+    apellido: "Fernández",
+    telefono: "5491144556677",
+    origen: "web",
+    destinoInteres: "Villa Carlos Paz",
+    cantidadPasajeros: 6,
+    productoId: "vcp-friends",
+    estado: "interesado",
+    vendedor: "Martín Olivera",
+    ultimaInteraccion: daysAgoIso(1),
+    proximaAccion: "Preguntar fecha y presupuesto del grupo",
+    notas: "Grupo de egresados, todavía sin fecha definida.",
+    createdAt: daysAgoIso(2),
+  },
+  {
+    id: "lead-martina",
+    nombre: "Martina",
+    apellido: "Gómez",
+    telefono: "5491155667788",
+    email: "martina.gomez@example.com",
+    origen: "referido",
+    destinoInteres: "Punta Cana",
+    fechaViaje: "2026-02-10",
+    presupuesto: 1300000,
+    productoId: "caribe-punta-cana",
+    estado: "contactado",
+    vendedor: "Martín Olivera",
+    ultimaInteraccion: daysAgoIso(15),
+    proximaAccion: "Retomar contacto: no responde hace dos semanas",
+    notas: "La recomendó una clienta anterior.",
+    createdAt: daysAgoIso(20),
+  },
+  {
+    id: "lead-tomas",
+    nombre: "Tomás",
+    apellido: "Ibarra",
+    telefono: "5491166778899",
+    origen: "web",
+    destinoInteres: "Villa Carlos Paz",
+    productoId: "vcp-friends",
+    estado: "nuevo",
+    ultimaInteraccion: daysAgoIso(20),
+    proximaAccion: "Primer contacto",
+    createdAt: daysAgoIso(20),
+  },
+  {
+    id: "lead-bruno",
+    nombre: "Bruno",
+    apellido: "Silva",
+    telefono: "5491177889900",
+    origen: "instagram",
+    instagram: "@brunosilva",
+    destinoInteres: "Florianópolis",
+    productoId: "brasil-floripa",
+    estado: "perdido",
+    vendedor: "Julieta Paz",
+    ultimaInteraccion: daysAgoIso(30),
+    notas: "Dijo que lo iba a pensar y dejó de responder.",
+    createdAt: daysAgoIso(40),
   },
 ];

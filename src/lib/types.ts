@@ -42,3 +42,42 @@ export interface Product {
   publicoObjetivo: string[];
   estado: ProductStatus;
 }
+
+// CRM — Leads (spec §18/§19). El scoring (HOT/WARM/COLD) se calcula en
+// `lead-scoring.ts` a partir de estas señales; nunca se guarda como campo
+// fijo para que la explicación siempre refleje el estado actual del lead.
+
+export type LeadOrigin = "web" | "instagram" | "whatsapp" | "referido" | "otro";
+
+export type LeadStatus =
+  | "nuevo"
+  | "contactado"
+  | "interesado"
+  | "cotizando"
+  | "negociacion"
+  | "reservado"
+  | "vendido"
+  | "perdido"
+  | "seguimiento";
+
+export interface Lead {
+  id: string;
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  email?: string;
+  origen: LeadOrigin;
+  instagram?: string;
+  destinoInteres?: string;
+  fechaViaje?: string; // ISO — fecha concreta que el lead mencionó, no la del catálogo
+  cantidadPasajeros?: number;
+  presupuesto?: number;
+  productoId?: string;
+  pidioMediosPago?: boolean;
+  estado: LeadStatus;
+  vendedor?: string;
+  ultimaInteraccion: string; // ISO
+  proximaAccion?: string;
+  notas?: string;
+  createdAt: string;
+}

@@ -1,25 +1,29 @@
 import Link from "next/link";
 import { Sparkles, Rocket, Package, Users, BarChart3, Brain } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
-import { products } from "@/lib/mock-data";
+import { products, leads } from "@/lib/mock-data";
+import { scoreLead } from "@/lib/lead-scoring";
 
 const ACCIONES = [
   { href: "/content-studio", label: "Crear contenido", icon: Sparkles, desc: "Hooks, Reels, Stories y carruseles a partir de un producto real" },
   { href: "/campanas", label: "Crear campaña", icon: Rocket, desc: "Próximamente" },
   { href: "/productos", label: "Ver productos", icon: Package, desc: "Catálogo turístico — fuente de verdad de la IA" },
-  { href: "/leads", label: "Gestionar leads", icon: Users, desc: "Próximamente" },
+  { href: "/leads", label: "Gestionar leads", icon: Users, desc: "CRM con lead scoring HOT/WARM/COLD explicado" },
   { href: "/analytics", label: "Analizar resultados", icon: BarChart3, desc: "Próximamente" },
   { href: "/summer-brain", label: "Preguntarle a Summer AI", icon: Brain, desc: "Próximamente" },
 ];
 
 export default function DashboardPage() {
   const activos = products.filter((p) => p.estado === "activo").length;
+  const hots = leads.filter((l) => scoreLead(l).nivel === "hot").length;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6">
       <div>
         <h1 className="text-2xl font-extrabold text-navy">SUMMER AI</h1>
-        <p className="mt-1 text-gray-500">Buenos días 👋 — {activos} producto(s) activo(s) en el catálogo.</p>
+        <p className="mt-1 text-gray-500">
+          Buenos días 👋 — {activos} producto(s) activo(s) · {hots} lead(s) 🔥 caliente(s) ahora mismo.
+        </p>
       </div>
 
       <div>

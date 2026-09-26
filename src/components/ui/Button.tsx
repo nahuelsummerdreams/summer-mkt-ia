@@ -28,12 +28,18 @@ interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   href?: string;
+  target?: string;
 }
 
-export function Button({ className, variant, size, href, ...props }: ButtonProps) {
+export function Button({ className, variant, size, href, target, ...props }: ButtonProps) {
   if (href) {
     return (
-      <Link href={href} className={cn(buttonVariants({ variant, size }), className)}>
+      <Link
+        href={href}
+        target={target}
+        rel={target === "_blank" ? "noopener noreferrer" : undefined}
+        className={cn(buttonVariants({ variant, size }), className)}
+      >
         {props.children}
       </Link>
     );

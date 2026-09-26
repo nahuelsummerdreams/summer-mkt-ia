@@ -9,7 +9,7 @@ export const AI_PROVIDERS: AiProviderMeta[] = [
   {
     id: "anthropic",
     label: "Anthropic (Claude)",
-    tasks: ["texto"],
+    tasks: ["texto", "vision"],
     envVar: "ANTHROPIC_API_KEY",
     velocidad: 2,
     costo: 2,
@@ -18,7 +18,7 @@ export const AI_PROVIDERS: AiProviderMeta[] = [
   {
     id: "openai",
     label: "OpenAI (GPT)",
-    tasks: ["texto"],
+    tasks: ["texto", "vision"],
     envVar: "OPENAI_API_KEY",
     velocidad: 1,
     costo: 2,

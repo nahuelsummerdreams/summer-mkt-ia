@@ -1,7 +1,7 @@
 import "server-only";
 import { AI_PROVIDERS, isProviderConfigured, providersForTask } from "./providers";
-import { generateTextAnthropic } from "./providers/anthropic";
-import { generateTextOpenAI } from "./providers/openai";
+import { generateTextAnthropic, analyzeImageAnthropic } from "./providers/anthropic";
+import { generateTextOpenAI, analyzeImageOpenAI } from "./providers/openai";
 import { generateTextGemini } from "./providers/gemini";
 import { AiHubError, type AiGenerateRequest, type AiGenerateResult, type AiProviderId } from "./types";
 
@@ -45,5 +45,23 @@ export async function generate(req: AiGenerateRequest): Promise<AiGenerateResult
   if (!req.prompt?.trim()) throw new AiHubError("El prompt no puede estar vacío.");
   const proveedor = pickProvider(req.task, req.prioridad ?? "calidad", req.proveedor);
   const texto = await callProvider(proveedor, req.prompt);
+  return { proveedor, texto };
+}
+
+export interface AiVisionRequest {
+  base64: string;
+  mimeType: string;
+  prompt: string;
+  prioridad?: string;
+  proveedor?: AiProviderId;
+}
+
+export async function analyzeImage(req: AiVisionRequest): Promise<AiGenerateResult> {
+  if (!req.base64) throw new AiHubError("Falta la imagen a analizar.");
+  const proveedor = pickProvider("vision", req.prioridad ?? "calidad", req.proveedor);
+  const texto =
+    proveedor === "anthropic"
+      ? await analyzeImageAnthropic(req.base64, req.mimeType, req.prompt)
+      : await analyzeImageOpenAI(req.base64, req.mimeType, req.prompt);
   return { proveedor, texto };
 }

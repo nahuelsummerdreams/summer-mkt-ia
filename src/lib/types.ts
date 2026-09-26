@@ -110,3 +110,24 @@ export interface Post {
   createdAt: string;
   updatedAt: string;
 }
+
+// Summer Media Library (spec §26). El archivo vive como data URL en
+// memoria del navegador para esta sesión — no hay storage persistente
+// todavía (eso es Supabase Storage o similar, día 2). El etiquetado es
+// real (IA de visión vía AI Model Hub) cuando hay un proveedor
+// configurado; si no, queda pendiente y se puede etiquetar a mano.
+
+export type MediaEstadoAnalisis = "pendiente" | "analizado" | "error";
+
+export interface MediaAsset {
+  id: string;
+  nombre: string;
+  url: string; // data URL
+  mimeType: string;
+  etiquetas: string[];
+  descripcionIA?: string;
+  proveedorIA?: string;
+  estadoAnalisis: MediaEstadoAnalisis;
+  errorAnalisis?: string;
+  createdAt: string;
+}

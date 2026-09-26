@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Sparkles, Copy, Check, RefreshCw, TriangleAlert } from "lucide-react";
+import { Sparkles, Copy, Check, RefreshCw, TriangleAlert, Wand2 } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -59,14 +59,44 @@ function ContentStudioForm() {
   const [duracionReel, setDuracionReel] = useState<(typeof CONTENT_DURACIONES)[number]>(30);
   const [pack, setPack] = useState<GeneratedContentPack | null>(null);
   const [seed, setSeed] = useState(0);
+  const [modo, setModo] = useState<"plantilla" | "ia">("plantilla");
+  const [proveedorIA, setProveedorIA] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const product = disponibles.find((p) => p.id === productId) ?? disponibles[0];
+  const input = { objetivo, publico, tono, estilo, duracionReel };
 
   const handleGenerate = () => {
     if (!product) return;
     const nextSeed = seed + 1;
     setSeed(nextSeed);
-    setPack(generateContentPack(product, { objetivo, publico, tono, estilo, duracionReel }, nextSeed));
+    setModo("plantilla");
+    setProveedorIA(null);
+    setAiError(null);
+    setPack(generateContentPack(product, input, nextSeed));
+  };
+
+  const handleEnhanceWithAI = async () => {
+    if (!product) return;
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/content/enhance", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ productId: product.id, input, seed: seed || 1 }),
+      });
+      const data = await res.json();
+      setPack(data.pack);
+      setModo(data.modo);
+      setProveedorIA(data.proveedor ?? null);
+      if (data.modo === "plantilla" && data.error) setAiError(data.error);
+    } catch {
+      setAiError("No se pudo contactar al servidor para mejorar el contenido con IA.");
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   return (
@@ -126,15 +156,50 @@ function ContentStudioForm() {
                 onChange={(v) => setDuracionReel(Number(v) as (typeof CONTENT_DURACIONES)[number])}
                 options={CONTENT_DURACIONES.map((d) => ({ value: String(d), label: `${d} segundos` }))}
               />
-              <Button onClick={handleGenerate} size="lg" className="w-full sm:w-auto">
-                <Sparkles className="h-4 w-4" />
-                {pack ? "Regenerar contenido" : "Generar contenido"}
-              </Button>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button onClick={handleGenerate} size="lg" className="w-full sm:w-auto">
+                  <Sparkles className="h-4 w-4" />
+                  {pack ? "Regenerar contenido" : "Generar contenido"}
+                </Button>
+                {pack && (
+                  <Button
+                    onClick={handleEnhanceWithAI}
+                    size="lg"
+                    variant="secondary"
+                    disabled={aiLoading}
+                    className="w-full sm:w-auto"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    {aiLoading ? "Mejorando con IA…" : "Mejorar con IA"}
+                  </Button>
+                )}
+              </div>
             </CardBody>
           </Card>
 
           {pack && (
             <div className="space-y-6">
+              <div className="flex flex-wrap items-center gap-2">
+                {modo === "ia" ? (
+                  <Badge className="bg-green-light text-green-dark">
+                    <Wand2 className="h-3 w-3" /> Generado con IA{proveedorIA ? ` · ${proveedorIA}` : ""}
+                  </Badge>
+                ) : (
+                  <Badge>Generado con plantillas</Badge>
+                )}
+              </div>
+
+              {aiError && (
+                <Card className="border-amber-200 bg-amber-50">
+                  <CardBody className="flex items-start gap-2 text-sm text-amber-700">
+                    <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>
+                      No se pudo mejorar con IA, se muestra la versión de plantillas. Motivo: {aiError}
+                    </span>
+                  </CardBody>
+                </Card>
+              )}
+
               {pack.advertencias.length > 0 && (
                 <Card className="border-amber-200 bg-amber-50">
                   <CardBody className="space-y-1">

@@ -25,6 +25,8 @@ import {
   Clapperboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBusiness } from "@/lib/business-store";
+import { HelpAssistant } from "@/components/domain/HelpAssistant";
 import type { ReactNode } from "react";
 
 const NAV_ITEMS = [
@@ -52,6 +54,7 @@ const NAV_ITEMS = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { business } = useBusiness();
 
   return (
     <div className="min-h-screen bg-gray-50 lg:flex">
@@ -78,9 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-white/10 p-4 text-xs text-white/40">
-          Summer Dreams Viajes · MVP interno
-        </div>
+        <div className="border-t border-white/10 p-4 text-xs text-white/40">{business.nombre} · MVP interno</div>
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
@@ -111,6 +112,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           );
         })}
       </nav>
+
+      <HelpAssistant />
     </div>
   );
 }

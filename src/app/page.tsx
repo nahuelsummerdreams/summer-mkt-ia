@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Sparkles, Rocket, Package, Users, BarChart3, Brain } from "lucide-react";
+import { Sparkles, Rocket, Package, Users, BarChart3, Brain, Clapperboard } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { products, leads } from "@/lib/mock-data";
 import { scoreLead } from "@/lib/lead-scoring";
 
 const ACCIONES = [
+  { href: "/video-studio", label: "Crear video", icon: Clapperboard, desc: "Idea → guion → AI Influencer → escenas → video" },
   { href: "/content-studio", label: "Crear contenido", icon: Sparkles, desc: "Hooks, Reels, Stories y carruseles a partir de un producto real" },
   { href: "/campanas", label: "Crear campaña", icon: Rocket, desc: "Objetivo, fecha límite y presupuesto → estrategia, KPIs y calendario" },
   { href: "/productos", label: "Ver productos", icon: Package, desc: "Catálogo turístico — fuente de verdad de la IA" },

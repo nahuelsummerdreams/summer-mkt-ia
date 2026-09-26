@@ -21,6 +21,8 @@ import {
   Star,
   Luggage,
   Settings,
+  UserRound,
+  Clapperboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
@@ -30,6 +32,8 @@ const NAV_ITEMS = [
   { href: "/summer-brain", label: "Summer Brain", icon: Brain },
   { href: "/productos", label: "Productos", icon: Package },
   { href: "/content-studio", label: "Content Studio", icon: Sparkles },
+  { href: "/video-studio", label: "Video Studio", icon: Clapperboard },
+  { href: "/ai-influencers", label: "AI Influencers", icon: UserRound },
   { href: "/instagram", label: "Instagram", icon: Camera },
   { href: "/tiktok", label: "TikTok", icon: Music2 },
   { href: "/calendario", label: "Calendario", icon: CalendarDays },

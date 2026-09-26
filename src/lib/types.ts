@@ -131,3 +131,136 @@ export interface MediaAsset {
   errorAnalisis?: string;
   createdAt: string;
 }
+
+// AI Influencer Studio + Video Studio (spec del módulo "AI Influencer +
+// Video Studio", §8-12, §32, §36). Regla no negociable: un influencer
+// creado a partir de una persona real (Digital Twin) exige consentimiento
+// explícito con timestamp — el sistema no está diseñado para facilitar
+// suplantación sin autorización. El "Character ID" (este mismo id) es lo
+// que un proveedor de video/imagen real usaría como referencia de
+// consistencia entre escenas — hoy no hay proveedor conectado, pero el
+// campo ya existe para no rehacer el modelo cuando se conecte uno.
+
+export type InfluencerGenero = "femenino" | "masculino" | "no-binario";
+export type InfluencerPersonalidad =
+  | "energetico"
+  | "divertido"
+  | "casual"
+  | "profesional"
+  | "elegante"
+  | "aventurero"
+  | "amigable"
+  | "inspirador";
+export type InfluencerNicho =
+  | "turismo"
+  | "viajes"
+  | "lifestyle"
+  | "gastronomia"
+  | "tecnologia"
+  | "negocios"
+  | "moda"
+  | "fitness"
+  | "educacion";
+
+export interface ConsentimientoUso {
+  aceptado: boolean;
+  texto: string;
+  timestamp: string;
+}
+
+export interface Influencer {
+  id: string;
+  nombre: string;
+  edadAparente: number;
+  genero: InfluencerGenero;
+  nacionalidad: string;
+  idioma: string;
+  acento: string;
+  personalidad: InfluencerPersonalidad;
+  nicho: InfluencerNicho;
+  estiloVisual: string;
+  vestimenta: string;
+  descripcionFisica: string;
+  nivelEnergia: "bajo" | "medio" | "alto";
+  formaDeHablar: string;
+  negativePrompts: string[];
+  imagenReferenciaUrl?: string; // data URL de la foto de referencia, si vino de "Crear desde mi foto"
+  esDigitalTwin: boolean;
+  consentimiento?: ConsentimientoUso; // obligatorio si esDigitalTwin o imagenReferenciaUrl están presentes
+  idsExternos: Record<string, string>; // ids que un proveedor real de video/imagen asigne a este Character ID
+  createdAt: string;
+}
+
+export type TipoContenidoVideo =
+  | "tiktok"
+  | "instagram-reel"
+  | "youtube-short"
+  | "publicidad"
+  | "ugc"
+  | "video-turistico"
+  | "video-institucional"
+  | "review"
+  | "tutorial"
+  | "storytelling"
+  | "presentacion-producto";
+
+export type FormatoVideo = "9:16" | "16:9" | "1:1";
+export type ModoGuion = "ia" | "propio";
+export type EscenaEstado = "borrador" | "lista" | "generando" | "generada" | "error";
+
+export interface Scene {
+  id: string;
+  numero: number;
+  duracionSegundos: number;
+  dialogo: string;
+  accion: string;
+  ubicacion: string;
+  tipoPlano: string;
+  movimientoCamara: string;
+  iluminacion: string;
+  ambiente: string;
+  broll?: string;
+  textoEnPantalla?: string;
+  estado: EscenaEstado;
+  advertenciaCalidad?: string;
+  jobId?: string;
+}
+
+export interface VideoProject {
+  id: string;
+  nombre: string;
+  tipoContenido: TipoContenidoVideo;
+  formato: FormatoVideo;
+  duracionObjetivo: number;
+  productoId?: string;
+  mensaje: string;
+  estilo: string;
+  modoGuion: ModoGuion;
+  respetarGuion: boolean; // si true, la IA nunca reescribe el diálogo del usuario
+  influencerId?: string;
+  escenas: Scene[];
+  estado: "borrador" | "guion-listo" | "generando" | "listo";
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Generation Jobs (spec §32) — el trabajo real de generación de
+// video/voz/avatar es asíncrono y depende de un proveedor externo. Sin
+// uno configurado, el job pasa a "failed" con el motivo exacto en vez de
+// simular un video que no existe.
+
+export type GenerationJobTipo = "escena-video" | "voz" | "avatar-lipsync";
+export type GenerationJobEstado = "queued" | "processing" | "completed" | "failed" | "cancelled";
+
+export interface GenerationJob {
+  id: string;
+  tipo: GenerationJobTipo;
+  proyectoId: string;
+  escenaId?: string;
+  estado: GenerationJobEstado;
+  progreso: number;
+  error?: string;
+  resultUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}

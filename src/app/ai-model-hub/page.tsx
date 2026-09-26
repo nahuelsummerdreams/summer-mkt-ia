@@ -16,16 +16,27 @@ interface ProviderStatus {
   configurado: boolean;
 }
 
+interface MediaProviderStatus {
+  id: string;
+  label: string;
+  capacidad: string;
+  envVars: string[];
+  comoConfigurar: string;
+  configurado: boolean;
+}
+
 const TASK_CATEGORIAS: { id: string; label: string }[] = [
   { id: "texto", label: "Texto" },
   { id: "imagen", label: "Imagen" },
+  { id: "vision", label: "Visión" },
   { id: "video", label: "Video" },
   { id: "voz", label: "Voz" },
-  { id: "vision", label: "Visión" },
+  { id: "avatar-lipsync", label: "Avatar / Lip-Sync" },
 ];
 
 export default function AiModelHubPage() {
   const [providers, setProviders] = useState<ProviderStatus[] | null>(null);
+  const [mediaProviders, setMediaProviders] = useState<MediaProviderStatus[] | null>(null);
   const [prompt, setPrompt] = useState("Escribí un hook para Instagram sobre un viaje a Bariloche.");
   const [prioridad, setPrioridad] = useState<AiPrioridad>("calidad");
   const [resultado, setResultado] = useState<string | null>(null);
@@ -37,6 +48,10 @@ export default function AiModelHubPage() {
       .then((r) => r.json())
       .then((data) => setProviders(data.proveedores))
       .catch(() => setProviders([]));
+    fetch("/api/ai/media-status")
+      .then((r) => r.json())
+      .then((data) => setMediaProviders(data.proveedores))
+      .catch(() => setMediaProviders([]));
   }, []);
 
   const hayTextoConfigurado = providers?.some((p) => p.tasks.includes("texto") && p.configurado);
@@ -80,16 +95,17 @@ export default function AiModelHubPage() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         {TASK_CATEGORIAS.map((cat) => {
-          const enCategoria = providers?.filter((p) => p.tasks.includes(cat.id)) ?? [];
+          const deTexto = providers?.filter((p) => p.tasks.includes(cat.id)) ?? [];
+          const deMedia = mediaProviders?.filter((p) => p.capacidad === cat.id) ?? [];
           return (
             <Card key={cat.id}>
               <CardBody>
                 <p className="mb-2 text-sm font-bold text-navy">{cat.label}</p>
-                {enCategoria.length === 0 ? (
+                {deTexto.length === 0 && deMedia.length === 0 ? (
                   <p className="text-xs text-gray-400">Sin proveedores conectados todavía.</p>
                 ) : (
                   <div className="space-y-1.5">
-                    {enCategoria.map((p) => (
+                    {deTexto.map((p) => (
                       <div key={p.id} className="flex items-center justify-between text-sm">
                         <span className="text-navy">{p.label}</span>
                         {p.configurado ? (
@@ -101,6 +117,23 @@ export default function AiModelHubPage() {
                             <X className="h-3 w-3" /> Falta {p.envVar}
                           </Badge>
                         )}
+                      </div>
+                    ))}
+                    {deMedia.map((p) => (
+                      <div key={p.id} className="space-y-0.5">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-navy">{p.label}</span>
+                          {p.configurado ? (
+                            <Badge className="bg-green-light text-green-dark">
+                              <Check className="h-3 w-3" /> Configurado
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-500">
+                              <X className="h-3 w-3" /> Falta {p.envVars.join(", ")}
+                            </Badge>
+                          )}
+                        </div>
+                        {!p.configurado && <p className="text-xs text-gray-400">{p.comoConfigurar}</p>}
                       </div>
                     ))}
                   </div>

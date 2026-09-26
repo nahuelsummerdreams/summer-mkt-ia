@@ -30,11 +30,11 @@ export function scoreLead(lead: Lead): LeadScore {
   const señalesNegativas: string[] = [];
   let puntos = 0;
 
-  if (lead.fechaViaje) {
+  if (lead.fechaConcreta) {
     puntos += PESOS.fechaConcreta;
-    señalesPositivas.push(`indicó una fecha concreta de viaje (${formatDate(lead.fechaViaje)})`);
+    señalesPositivas.push(`indicó una fecha concreta (${formatDate(lead.fechaConcreta)})`);
   } else {
-    señalesNegativas.push("sin fecha concreta de viaje");
+    señalesNegativas.push("sin fecha concreta");
   }
 
   if (lead.presupuesto) {
@@ -44,9 +44,9 @@ export function scoreLead(lead: Lead): LeadScore {
     señalesNegativas.push("sin presupuesto definido");
   }
 
-  if (lead.cantidadPasajeros) {
+  if (lead.cantidadPersonas) {
     puntos += PESOS.pasajeros;
-    señalesPositivas.push(`confirmó cantidad de pasajeros (${lead.cantidadPasajeros})`);
+    señalesPositivas.push(`confirmó cantidad de personas (${lead.cantidadPersonas})`);
   }
 
   if (lead.pidioMediosPago) {

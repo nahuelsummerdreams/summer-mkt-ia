@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { products } from "@/lib/mock-data";
+import { useBusiness } from "@/lib/business-store";
 import { generateCampaignPlan, type CampaignPlan } from "@/lib/campaign-builder";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -18,9 +19,10 @@ function defaultFechaLimite() {
 }
 
 export default function CampanasPage() {
+  const { business } = useBusiness();
   const disponibles = products.filter((p) => p.estado === "activo");
   const [productId, setProductId] = useState(disponibles[0]?.id ?? "");
-  const [objetivoTexto, setObjetivoTexto] = useState("Vender 20 paquetes");
+  const [objetivoTexto, setObjetivoTexto] = useState(`Vender 20 ${business.vocabulario.itemPlural}`);
   const [fechaLimite, setFechaLimite] = useState(defaultFechaLimite());
   const [presupuesto, setPresupuesto] = useState(300000);
   const [plan, setPlan] = useState<CampaignPlan | null>(null);
@@ -29,7 +31,7 @@ export default function CampanasPage() {
 
   const handleCrear = () => {
     if (!producto) return;
-    setPlan(generateCampaignPlan({ producto, objetivoTexto, fechaLimite, presupuesto }));
+    setPlan(generateCampaignPlan({ producto, vocabulario: business.vocabulario, objetivoTexto, fechaLimite, presupuesto }));
   };
 
   return (
@@ -54,10 +56,10 @@ export default function CampanasPage() {
                 label="Producto"
                 value={productId || producto?.id || ""}
                 onChange={setProductId}
-                options={disponibles.map((p) => ({ value: p.id, label: `${p.nombre} (${p.destino})` }))}
+                options={disponibles.map((p) => ({ value: p.id, label: p.nombre }))}
               />
               <label className="flex flex-col gap-1 text-xs font-medium text-gray-500">
-                Objetivo (ej. &ldquo;Vender 20 paquetes&rdquo;)
+                Objetivo (ej. &ldquo;Vender 20 {business.vocabulario.itemPlural}&rdquo;)
                 <input
                   value={objetivoTexto}
                   onChange={(e) => setObjetivoTexto(e.target.value)}

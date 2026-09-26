@@ -3,10 +3,13 @@ import { products } from "@/lib/mock-data";
 import { generateContentPack, type ContentGenerationInput } from "@/lib/content-generator";
 import { enhanceContentPackWithAI } from "@/lib/ai/content";
 import { AiHubError } from "@/lib/ai/types";
+import type { VocabularioNegocio } from "@/lib/types";
 
 interface Body {
   productId: string;
   input: ContentGenerationInput;
+  vocabulario: VocabularioNegocio;
+  negocioNombre?: string;
   seed?: number;
 }
 
@@ -25,11 +28,14 @@ export async function POST(req: Request) {
   if (!body.input) {
     return NextResponse.json({ error: "Falta el campo input (objetivo/publico/tono/estilo/duracionReel)." }, { status: 400 });
   }
+  if (!body.vocabulario) {
+    return NextResponse.json({ error: "Falta el campo vocabulario del negocio configurado." }, { status: 400 });
+  }
 
-  const basePack = generateContentPack(product, body.input, body.seed ?? Date.now());
+  const basePack = generateContentPack(product, body.vocabulario, body.input, body.seed ?? Date.now());
 
   try {
-    const { pack, proveedor } = await enhanceContentPackWithAI(basePack, body.input);
+    const { pack, proveedor } = await enhanceContentPackWithAI(basePack, body.input, body.negocioNombre);
     return NextResponse.json({ pack, modo: "ia", proveedor });
   } catch (err) {
     const message = err instanceof AiHubError ? err.message : "Error inesperado mejorando el contenido con IA.";

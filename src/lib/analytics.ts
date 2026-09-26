@@ -50,7 +50,7 @@ export function computeComercialMetrics(leads: Lead[], products: Product[]): Com
   const facturacionEstimada = vendidos.reduce((acc, l) => {
     const producto = products.find((p) => p.id === l.productoId);
     if (!producto) return acc;
-    return acc + producto.precioVenta * (l.cantidadPasajeros ?? 1);
+    return acc + producto.precio * (l.cantidadPersonas ?? 1);
   }, 0);
 
   return {

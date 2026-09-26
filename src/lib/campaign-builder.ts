@@ -1,13 +1,13 @@
-import type { Product } from "./types";
+import type { Product, VocabularioNegocio } from "./types";
 import { formatCurrency, daysUntil } from "./utils";
 
 // Campaign Builder (spec §16) — motor de reglas, mismo principio que el
 // resto de SUMMER AI: la estrategia y los KPIs se arman a partir de datos
-// reales del producto (cupos, precio, fecha límite de reserva) más lo que
-// el usuario ingresó (objetivo, fecha límite de campaña, presupuesto).
-// Cuando hace falta un supuesto que no es un dato real (ej. tasa de
-// conversión), se etiqueta explícitamente como estimación editable —
-// nunca se presenta como un dato histórico real.
+// reales del producto (cupos, precio, fecha límite) más lo que el usuario
+// ingresó (objetivo, fecha límite de campaña, presupuesto). Cuando hace
+// falta un supuesto que no es un dato real (ej. tasa de conversión), se
+// etiqueta explícitamente como estimación editable — nunca se presenta
+// como un dato histórico real.
 
 const CONVERSION_SUPUESTA = 0.08; // 8% leads→venta, valor de referencia editable, no histórico
 
@@ -40,15 +40,16 @@ export interface CampaignPlan {
   advertencias: string[];
 }
 
-function detectarMeta(texto: string): MetaDetectada | undefined {
-  const match = texto.match(/(\d+)\s*(paquetes?|pasajeros?|ventas?|reservas?|cupos?)/i);
+function detectarMeta(texto: string, vocabulario: VocabularioNegocio): MetaDetectada | undefined {
+  const unidades = [vocabulario.itemPlural, vocabulario.clientePlural, "ventas?", "reservas?", "cupos?", "clientes?"].join("|");
+  const match = texto.match(new RegExp(`(\\d+)\\s*(${unidades})`, "i"));
   if (!match) return undefined;
   return { cantidad: Number(match[1]), unidad: match[2].toLowerCase() };
 }
 
 const TEMAS_ROTACION = [
   "Hook / presentación",
-  "Detalle del producto (hotel, incluye)",
+  "Detalle del producto/servicio",
   "Precio + urgencia",
   "Testimonio / experiencia",
   "CTA directo a WhatsApp",
@@ -56,11 +57,12 @@ const TEMAS_ROTACION = [
 
 export function generateCampaignPlan(params: {
   producto: Product;
+  vocabulario: VocabularioNegocio;
   objetivoTexto: string;
   fechaLimite: string;
   presupuesto?: number;
 }): CampaignPlan {
-  const { producto, objetivoTexto, fechaLimite, presupuesto } = params;
+  const { producto, vocabulario, objetivoTexto, fechaLimite, presupuesto } = params;
   const advertencias: string[] = [];
 
   const diasRestantes = daysUntil(fechaLimite);
@@ -70,7 +72,7 @@ export function generateCampaignPlan(params: {
   const presupuestoDiario =
     presupuesto && diasRestantes && diasRestantes > 0 ? Math.round(presupuesto / diasRestantes) : undefined;
 
-  const publicoObjetivo = producto.publicoObjetivo.length > 0 ? producto.publicoObjetivo : ["turismo-joven"];
+  const publicoObjetivo = producto.publicoObjetivo;
 
   const estrategia: string[] = [];
   estrategia.push(`Objetivo declarado: "${objetivoTexto}".`);
@@ -87,11 +89,11 @@ export function generateCampaignPlan(params: {
   if (presupuestoDiario) {
     estrategia.push(`Con ${formatCurrency(presupuesto ?? 0)} de presupuesto, eso es ${formatCurrency(presupuestoDiario)} por día.`);
   }
-  estrategia.push(
-    `Público sugerido: ${publicoObjetivo.join(", ")}, en base al público objetivo cargado en el producto.`
-  );
+  if (publicoObjetivo.length > 0) {
+    estrategia.push(`Público sugerido: ${publicoObjetivo.join(", ")}, en base al público objetivo cargado en el ${vocabulario.itemSingular}.`);
+  }
 
-  const metaDetectada = detectarMeta(objetivoTexto);
+  const metaDetectada = detectarMeta(objetivoTexto, vocabulario);
   let kpis: CampaignKpis | undefined;
   if (metaDetectada) {
     const leadsNecesarios = Math.ceil(metaDetectada.cantidad / CONVERSION_SUPUESTA);
@@ -102,7 +104,9 @@ export function generateCampaignPlan(params: {
       nota: `Estimado con una conversión supuesta del ${Math.round(CONVERSION_SUPUESTA * 100)}% (valor de referencia editable, no un dato histórico real de esta campaña).`,
     };
   } else {
-    advertencias.push('No se detectó una meta numérica en el objetivo (ej. "vender 20 paquetes") — no se calculan KPIs sin eso.');
+    advertencias.push(
+      `No se detectó una meta numérica en el objetivo (ej. "vender 20 ${vocabulario.itemPlural}") — no se calculan KPIs sin eso.`
+    );
   }
 
   const calendario: CampaignDia[] = [];

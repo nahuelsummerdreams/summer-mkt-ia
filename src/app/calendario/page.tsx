@@ -43,7 +43,7 @@ export default function CalendarioPage() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-sm font-semibold text-navy">{dia.productoSugerido.nombre}</p>
-                    <p className="text-xs text-gray-400">{dia.productoSugerido.destino}</p>
+                    <p className="text-xs text-gray-400">{Object.values(dia.productoSugerido.atributos)[0] ?? dia.productoSugerido.categoria}</p>
                   </div>
                   <Button href={`/content-studio?producto=${dia.productoSugerido.id}`} size="sm" variant="subtle">
                     Generar

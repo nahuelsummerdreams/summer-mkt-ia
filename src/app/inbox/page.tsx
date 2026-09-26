@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { products } from "@/lib/mock-data";
+import { useBusiness } from "@/lib/business-store";
 import { suggestReply } from "@/lib/whatsapp-assistant";
 
 interface InboxMessage {
@@ -19,6 +20,7 @@ interface InboxMessage {
 }
 
 export default function InboxPage() {
+  const { business } = useBusiness();
   const [mensajes, setMensajes] = useState<InboxMessage[]>([]);
   const [configurado, setConfigurado] = useState<boolean | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -132,7 +134,7 @@ export default function InboxPage() {
       ) : (
         <div className="space-y-4">
           {conversaciones.map((conv) => {
-            const sugerencia = suggestReply(conv.ultimo.texto, products);
+            const sugerencia = suggestReply(conv.ultimo.texto, products, business.vocabulario);
             return (
               <Card key={conv.telefono}>
                 <CardBody className="space-y-3">

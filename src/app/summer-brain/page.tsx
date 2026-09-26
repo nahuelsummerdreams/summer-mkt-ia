@@ -5,10 +5,12 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { leads, products } from "@/lib/mock-data";
+import { useBusiness } from "@/lib/business-store";
 import { generateBriefing } from "@/lib/summer-brain";
 import { formatCurrency, whatsAppLink } from "@/lib/utils";
 
 export default function SummerBrainPage() {
+  const { business } = useBusiness();
   const briefing = generateBriefing(leads, products);
 
   return (
@@ -86,7 +88,7 @@ export default function SummerBrainPage() {
                     <p className="text-xs font-semibold text-navy">👉 {lead.proximaAccion}</p>
                   )}
                   <Button
-                    href={whatsAppLink(lead.telefono, `Hola ${lead.nombre}! 👋 Te escribo de Summer Dreams.`)}
+                    href={whatsAppLink(lead.telefono, `Hola ${lead.nombre}! 👋 Te escribo de ${business.nombre}.`)}
                     target="_blank"
                     size="sm"
                     variant="subtle"
@@ -106,15 +108,15 @@ export default function SummerBrainPage() {
           <CardBody className="space-y-2">
             <p className="flex items-center gap-2 text-sm font-bold text-navy">
               <Sparkles className="h-4 w-4 text-green" />
-              Producto a impulsar
+              {business.vocabulario.itemSingular.charAt(0).toUpperCase() + business.vocabulario.itemSingular.slice(1)} a impulsar
             </p>
             <p className="text-sm text-gray-500">
               <strong className="text-navy">{briefing.productoDestacado.producto.nombre}</strong> —{" "}
               {briefing.productoDestacado.motivo}. Desde{" "}
-              {formatCurrency(briefing.productoDestacado.producto.precioVenta, briefing.productoDestacado.producto.moneda)}.
+              {formatCurrency(briefing.productoDestacado.producto.precio, briefing.productoDestacado.producto.moneda)}.
             </p>
             <Button href={`/content-studio?producto=${briefing.productoDestacado.producto.id}`} size="sm">
-              Generar contenido para este producto
+              Generar contenido para este {business.vocabulario.itemSingular}
             </Button>
           </CardBody>
         </Card>

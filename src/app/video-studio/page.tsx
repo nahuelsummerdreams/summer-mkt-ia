@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { products } from "@/lib/mock-data";
+import { useBusiness } from "@/lib/business-store";
 import { useInfluencers } from "@/lib/influencer-store";
 import { useVideoStudio } from "@/lib/video-studio-store";
 import { generateScriptTemplate, splitScriptIntoScenes } from "@/lib/script-studio";
@@ -19,6 +20,7 @@ import type { FormatoVideo, ModoGuion, TipoContenidoVideo, VideoProject } from "
 
 export default function VideoStudioPage() {
   const router = useRouter();
+  const { business } = useBusiness();
   const { proyectos, addProyecto } = useVideoStudio();
   const { influencers } = useInfluencers();
 
@@ -48,7 +50,7 @@ export default function VideoStudioPage() {
     const escenas =
       modoGuion === "propio" && guionPropio.trim()
         ? splitScriptIntoScenes(guionPropio, duracionObjetivo)
-        : generateScriptTemplate({ producto, mensaje, tipoContenido, estilo, duracionObjetivo });
+        : generateScriptTemplate({ producto, vocabulario: business.vocabulario, mensaje, tipoContenido, estilo, duracionObjetivo });
 
     const now = new Date().toISOString();
     const proyecto: VideoProject = {

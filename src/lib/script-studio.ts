@@ -1,5 +1,5 @@
-import type { Product, Scene, TipoContenidoVideo } from "./types";
-import { formatCurrency, formatDateRange, uid } from "./utils";
+import type { Product, Scene, TipoContenidoVideo, VocabularioNegocio } from "./types";
+import { formatCurrency, formatDate, uid } from "./utils";
 
 // Guion + división en escenas (spec §6/§7/§12/§18).
 // Regla no negociable: cuando el usuario pega su propio guion y activa
@@ -85,6 +85,7 @@ export function splitScriptIntoScenes(texto: string, duracionObjetivo: number): 
 
 export interface ScriptTemplateInput {
   producto?: Product;
+  vocabulario: VocabularioNegocio;
   mensaje: string;
   tipoContenido: TipoContenidoVideo;
   estilo: string;
@@ -93,49 +94,51 @@ export interface ScriptTemplateInput {
 
 // Modo A: la IA (por ahora, motor de reglas — igual que Content Studio
 // antes de "Mejorar con IA") arma la estructura Hook/Desarrollo/
-// Beneficios/Oferta/CTA del spec §6, usando datos reales del producto si
-// hay uno seleccionado.
+// Beneficios/Oferta/CTA del spec §6, usando datos reales del producto
+// (nombre, precio, atributos propios del rubro) si hay uno seleccionado.
 export function generateScriptTemplate(input: ScriptTemplateInput): Scene[] {
-  const { producto, mensaje, duracionObjetivo } = input;
+  const { producto, vocabulario, mensaje, duracionObjetivo } = input;
   const n = 5;
   const duracionPorEscena = Math.max(3, Math.round(duracionObjetivo / n));
 
+  const atributos = producto ? Object.entries(producto.atributos) : [];
   const datos = producto
     ? {
-        destino: producto.destino,
-        precio: formatCurrency(producto.precioVenta, producto.moneda),
-        fechas: formatDateRange(producto.fechaSalida, producto.fechaRegreso),
-        hotel: producto.hotelNombre,
+        nombre: producto.nombre,
+        precio: formatCurrency(producto.precio, producto.moneda),
+        detalle1: atributos[0],
+        detalle2: atributos[1],
+        fechaLimite: producto.fechaLimite ? formatDate(producto.fechaLimite) : undefined,
       }
     : null;
 
   const bloques: { dialogo: string; accion: string; plano: string; camara: string }[] = [
     {
       dialogo: datos
-        ? `¿Todavía no sabés dónde viajar${datos.destino ? ` a ${datos.destino}` : ""}?`
-        : `¿Todavía no decidiste tu próximo viaje?`,
+        ? `¿Todavía no conocés ${datos.nombre}?`
+        : `¿Todavía no decidiste tu próximo ${vocabulario.itemSingular}?`,
       accion: "Mira a cámara, expresión de intriga, capta atención",
       plano: "Medio close-up",
       camara: "Handheld natural",
     },
     {
-      dialogo:
-        mensaje.trim() ||
-        (datos ? `Te traemos una propuesta para viajar a ${datos.destino}.` : "Te traemos una propuesta pensada para vos."),
+      dialogo: mensaje.trim() || (datos ? `Te traemos una propuesta: ${datos.nombre}.` : "Te traemos una propuesta pensada para vos."),
       accion: "Presenta el producto con entusiasmo, gesticula",
       plano: "Plano medio",
       camara: "Steady",
     },
     {
-      dialogo: datos
-        ? `Incluye ${datos.hotel ? `hotel en ${datos.hotel}` : "alojamiento"}${datos.fechas !== "—" ? `, saliendo ${datos.fechas}` : ""}.`
-        : "Te contamos todo lo que incluye este viaje.",
+      dialogo: datos?.detalle1
+        ? `Incluye ${datos.detalle1[0]}: ${datos.detalle1[1]}${datos.detalle2 ? `. También ${datos.detalle2[0]}: ${datos.detalle2[1]}` : ""}.`
+        : `Te contamos todo lo que incluye este ${vocabulario.itemSingular}.`,
       accion: "Señala hacia elementos en pantalla (b-roll)",
       plano: "Plano medio",
       camara: "Leve movimiento",
     },
     {
-      dialogo: datos ? `Todo esto desde ${datos.precio}.` : "Con un precio pensado para vos.",
+      dialogo: datos
+        ? `Todo esto desde ${datos.precio}${datos.fechaLimite ? `, hasta el ${datos.fechaLimite}` : ""}.`
+        : "Con un precio pensado para vos.",
       accion: "Muestra el precio con la mano, sonríe",
       plano: "Medio close-up",
       camara: "Estático",
@@ -153,7 +156,7 @@ export function generateScriptTemplate(input: ScriptTemplateInput): Scene[] {
     scene.accion = b.accion;
     scene.tipoPlano = b.plano;
     scene.movimientoCamara = b.camara;
-    scene.ubicacion = datos?.destino ?? "";
+    scene.ubicacion = datos?.nombre ?? "";
     return scene;
   });
 }

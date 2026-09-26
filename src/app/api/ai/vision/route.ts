@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { analyzeImage } from "@/lib/ai/router";
 import { AiHubError } from "@/lib/ai/types";
 
-// Prompt fijo del lado servidor: le pedimos SOLO etiquetas del catálogo del
-// spec §26 (destino, hotel, personas, playa, nieve, amigos, familia,
-// aeropuerto, excursión) + una descripción corta. La IA de visión describe
-// lo que ve en la imagen — nunca inventa datos del catálogo turístico
-// (precio, disponibilidad); eso sigue viniendo siempre de Productos.
-const PROMPT_ETIQUETADO = `Analizá esta imagen de una agencia de viajes y devolvé SOLO un JSON (sin texto alrededor, sin markdown) con esta forma exacta:
+// Prompt fijo del lado servidor: le pedimos SOLO etiquetas de una lista
+// cerrada y genérica (spec §26, adaptada para cualquier rubro) + una
+// descripción corta. La IA de visión describe lo que ve en la imagen —
+// nunca inventa datos del catálogo (precio, disponibilidad); eso sigue
+// viniendo siempre de Productos.
+const PROMPT_ETIQUETADO = `Analizá esta imagen de un negocio y devolvé SOLO un JSON (sin texto alrededor, sin markdown) con esta forma exacta:
 {
-  "etiquetas": [hasta 6 strings de esta lista cerrada, solo las que apliquen: "destino", "hotel", "playa", "nieve", "amigos", "familia", "aeropuerto", "excursion", "pareja", "grupo", "noche", "comida"],
-  "descripcion": "una frase corta describiendo la escena, sin inventar el nombre del lugar si no es reconocible"
+  "etiquetas": [hasta 6 strings de esta lista cerrada, solo las que apliquen: "producto", "servicio", "personas", "equipo", "interior", "exterior", "detalle", "packaging", "logo", "pareja", "grupo", "ambiente"],
+  "descripcion": "una frase corta describiendo la escena, sin inventar nombres propios que no sean reconocibles"
 }`;
 
 export async function POST(req: Request) {

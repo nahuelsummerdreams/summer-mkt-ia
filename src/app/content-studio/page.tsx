@@ -11,6 +11,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { products } from "@/lib/mock-data";
 import { usePosts } from "@/lib/posts-store";
+import { useBusiness } from "@/lib/business-store";
 import { uid } from "@/lib/utils";
 import type { Post, PostFormato, PostPlataforma } from "@/lib/types";
 import {
@@ -62,9 +63,10 @@ function ContentStudioForm() {
   const disponibles = useMemo(() => products.filter((p) => p.estado === "activo"), []);
   const initialId = searchParams.get("producto") ?? disponibles[0]?.id ?? "";
 
+  const { business } = useBusiness();
   const [productId, setProductId] = useState(initialId);
   const [objetivo, setObjetivo] = useState<ContentObjetivo>("vender");
-  const [publico, setPublico] = useState<ContentPublico>("turismo-joven");
+  const [publico, setPublico] = useState<ContentPublico>("jovenes");
   const [tono, setTono] = useState<ContentTono>("cercano");
   const [estilo, setEstilo] = useState<ContentEstilo>("viral");
   const [duracionReel, setDuracionReel] = useState<(typeof CONTENT_DURACIONES)[number]>(30);
@@ -89,7 +91,7 @@ function ContentStudioForm() {
     setModo("plantilla");
     setProveedorIA(null);
     setAiError(null);
-    setPack(generateContentPack(product, input, nextSeed));
+    setPack(generateContentPack(product, business.vocabulario, input, nextSeed));
   };
 
   const handleEnhanceWithAI = async () => {
@@ -100,7 +102,13 @@ function ContentStudioForm() {
       const res = await fetch("/api/content/enhance", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ productId: product.id, input, seed: seed || 1 }),
+        body: JSON.stringify({
+          productId: product.id,
+          input,
+          vocabulario: business.vocabulario,
+          negocioNombre: business.nombre,
+          seed: seed || 1,
+        }),
       });
       const data = await res.json();
       setPack(data.pack);
@@ -149,21 +157,21 @@ function ContentStudioForm() {
         </div>
         <p className="mt-1 text-gray-500">
           Elegí un producto real del catálogo y generá hooks, guion de Reel, captions, Stories y carrusel listos
-          para publicar. Todo dato concreto (destino, fechas, precio, hotel) sale del catálogo — nunca se inventa.
+          para publicar. Todo dato concreto (precio, fechas, atributos) sale del catálogo — nunca se inventa.
         </p>
       </div>
 
       {disponibles.length === 0 ? (
-        <EmptyState icon={Sparkles} title="No hay productos activos para generar contenido" />
+        <EmptyState icon={Sparkles} title={`No hay ${business.vocabulario.itemPlural} activos para generar contenido`} />
       ) : (
         <>
           <Card>
             <CardBody className="space-y-4">
               <Select
-                label="Producto"
+                label={business.vocabulario.itemSingular.charAt(0).toUpperCase() + business.vocabulario.itemSingular.slice(1)}
                 value={productId || product?.id || ""}
                 onChange={setProductId}
-                options={disponibles.map((p) => ({ value: p.id, label: `${p.nombre} (${p.destino})` }))}
+                options={disponibles.map((p) => ({ value: p.id, label: p.nombre }))}
               />
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Select

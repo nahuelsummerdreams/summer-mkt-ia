@@ -13,8 +13,8 @@ export interface LeadPrioritario {
   score: LeadScore;
 }
 
-export interface DestinoTendencia {
-  destino: string;
+export interface TemaTendencia {
+  tema: string;
   cantidad: number;
 }
 
@@ -27,7 +27,7 @@ export interface SummerBriefing {
   resumen: string[];
   metricas: { total: number; hot: number; warm: number; cold: number; seguimientosPendientes: number };
   leadsPrioritarios: LeadPrioritario[];
-  destinoTendencia?: DestinoTendencia;
+  temaTendencia?: TemaTendencia;
   productoDestacado?: ProductoDestacado;
   alertas: string[];
 }
@@ -45,17 +45,17 @@ export function generateBriefing(leads: Lead[], products: Product[]): SummerBrie
     .sort((a, b) => b.score.puntos - a.score.puntos)
     .slice(0, 3);
 
-  // Tendencia de destino: el destino con más leads activos (mínimo 2 para
+  // Tendencia de interés: el tema con más leads activos (mínimo 2 para
   // que valga la pena mencionarlo como tendencia).
-  const porDestino = new Map<string, number>();
+  const porTema = new Map<string, number>();
   activos.forEach((l) => {
-    if (!l.destinoInteres) return;
-    porDestino.set(l.destinoInteres, (porDestino.get(l.destinoInteres) ?? 0) + 1);
+    if (!l.interesEn) return;
+    porTema.set(l.interesEn, (porTema.get(l.interesEn) ?? 0) + 1);
   });
-  let destinoTendencia: DestinoTendencia | undefined;
-  for (const [destino, cantidad] of porDestino) {
-    if (cantidad >= 2 && (!destinoTendencia || cantidad > destinoTendencia.cantidad)) {
-      destinoTendencia = { destino, cantidad };
+  let temaTendencia: TemaTendencia | undefined;
+  for (const [tema, cantidad] of porTema) {
+    if (cantidad >= 2 && (!temaTendencia || cantidad > temaTendencia.cantidad)) {
+      temaTendencia = { tema, cantidad };
     }
   }
 
@@ -98,9 +98,9 @@ export function generateBriefing(leads: Lead[], products: Product[]): SummerBrie
   resumen.push(
     `Tenés ${leads.length} lead(s) en total: ${hot.length} caliente(s), ${warm.length} tibio(s) y ${cold.length} frío(s).`
   );
-  if (destinoTendencia) {
+  if (temaTendencia) {
     resumen.push(
-      `${destinoTendencia.destino} está generando más consultas que el resto del catálogo (${destinoTendencia.cantidad} leads activos).`
+      `${temaTendencia.tema} está generando más consultas que el resto del catálogo (${temaTendencia.cantidad} leads activos).`
     );
   }
   if (productoDestacado) {
@@ -114,7 +114,7 @@ export function generateBriefing(leads: Lead[], products: Product[]): SummerBrie
     resumen,
     metricas: { total: leads.length, hot: hot.length, warm: warm.length, cold: cold.length, seguimientosPendientes: seguimientosPendientes.length },
     leadsPrioritarios,
-    destinoTendencia,
+    temaTendencia,
     productoDestacado,
     alertas,
   };

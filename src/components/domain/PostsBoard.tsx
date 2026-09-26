@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { usePosts } from "@/lib/posts-store";
 import { products } from "@/lib/mock-data";
+import { useBusiness } from "@/lib/business-store";
 import { generateContentPack, type ContentEstilo, type ContentObjetivo, type ContentPublico, type ContentTono } from "@/lib/content-generator";
 import type { Post, PostEstado, PostPlataforma } from "@/lib/types";
 
@@ -30,6 +31,7 @@ interface IntegrationStatus {
 
 function PostCard({ post }: { post: Post }) {
   const { setEstado, updatePost, deletePost } = usePosts();
+  const { business } = useBusiness();
   const [editando, setEditando] = useState(false);
   const [captionDraft, setCaptionDraft] = useState(post.caption);
   const producto = products.find((p) => p.id === post.productoId);
@@ -38,6 +40,7 @@ function PostCard({ post }: { post: Post }) {
     if (!producto) return;
     const pack = generateContentPack(
       producto,
+      business.vocabulario,
       {
         objetivo: post.objetivo as ContentObjetivo,
         publico: post.publico as ContentPublico,
@@ -65,7 +68,7 @@ function PostCard({ post }: { post: Post }) {
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-sm font-bold text-navy">{producto?.nombre ?? "Producto no encontrado"}</p>
-            <p className="text-xs text-gray-400">{producto?.destino}</p>
+            <p className="text-xs text-gray-400">{producto?.categoria}</p>
           </div>
           <Badge>{post.formato}</Badge>
         </div>

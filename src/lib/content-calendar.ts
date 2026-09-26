@@ -4,15 +4,10 @@ import type { Product } from "./types";
 // fijo por día de la semana y sugiere, para ese tema, el producto activo
 // real que mejor encaja (nunca un producto inventado). Si no hay ningún
 // producto que encaje, el día queda sin sugerencia en vez de forzar uno.
+// Genérico por diseño: los temas no asumen turismo, se resuelven contra
+// `atributos`/precio/cupos/fechaLimite de cualquier rubro.
 
-export type TemaDia =
-  | "turismo-joven"
-  | "hotel"
-  | "precio"
-  | "destino"
-  | "oferta"
-  | "experiencia"
-  | "cta";
+export type TemaDia = "publico" | "detalle" | "precio" | "destacado" | "oferta" | "experiencia" | "cta";
 
 export interface DiaCalendario {
   diaSemana: string;
@@ -24,10 +19,10 @@ export interface DiaCalendario {
 }
 
 const PLANTILLA_SEMANA: { diaSemana: string; tema: TemaDia; temaLabel: string; emoji: string }[] = [
-  { diaSemana: "Lunes", tema: "turismo-joven", temaLabel: "Turismo Joven", emoji: "🎒" },
-  { diaSemana: "Martes", tema: "hotel", temaLabel: "Hotel", emoji: "🏨" },
+  { diaSemana: "Lunes", tema: "publico", temaLabel: "Público objetivo", emoji: "🎯" },
+  { diaSemana: "Martes", tema: "detalle", temaLabel: "Detalle", emoji: "🔎" },
   { diaSemana: "Miércoles", tema: "precio", temaLabel: "Precio", emoji: "💰" },
-  { diaSemana: "Jueves", tema: "destino", temaLabel: "Destino", emoji: "🌎" },
+  { diaSemana: "Jueves", tema: "destacado", temaLabel: "Destacado", emoji: "🌟" },
   { diaSemana: "Viernes", tema: "oferta", temaLabel: "Oferta", emoji: "🔥" },
   { diaSemana: "Sábado", tema: "experiencia", temaLabel: "Experiencia", emoji: "🎉" },
   { diaSemana: "Domingo", tema: "cta", temaLabel: "CTA", emoji: "📲" },
@@ -47,22 +42,20 @@ function sugerirProducto(tema: TemaDia, productos: Product[]): Product | undefin
   if (activos.length === 0) return undefined;
 
   switch (tema) {
-    case "turismo-joven":
-      return activos.find((p) => p.categoria === "turismo-joven" || p.publicoObjetivo.includes("turismo-joven"));
-    case "hotel":
-      return activos.find((p) => p.hotelNombre);
+    case "publico":
+      return activos.find((p) => p.publicoObjetivo.includes("jovenes")) ?? activos[0];
+    case "detalle":
+      return [...activos].sort((a, b) => Object.keys(b.atributos).length - Object.keys(a.atributos).length)[0];
     case "precio":
-      return [...activos].sort((a, b) => a.precioVenta - b.precioVenta)[0];
-    case "destino":
+      return [...activos].sort((a, b) => a.precio - b.precio)[0];
+    case "destacado":
       return activos[0];
     case "oferta":
-      return [...activos]
-        .filter((p) => p.cupos != null)
-        .sort((a, b) => (a.cupos ?? Infinity) - (b.cupos ?? Infinity))[0];
+      return [...activos].filter((p) => p.cupos != null).sort((a, b) => (a.cupos ?? Infinity) - (b.cupos ?? Infinity))[0];
     case "experiencia":
-      return activos.find((p) => p.excursionesIncluidas.length > 0) ?? activos[0];
+      return activos.find((p) => Object.keys(p.atributos).length > 2) ?? activos[0];
     case "cta":
-      return activos.find((p) => p.fechaLimiteReserva) ?? activos[0];
+      return activos.find((p) => p.fechaLimite) ?? activos[0];
     default:
       return undefined;
   }

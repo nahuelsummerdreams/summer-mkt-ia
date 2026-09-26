@@ -6,38 +6,61 @@
 // el día que se conecte a Supabase (propio o el del Seller Hub), se
 // reescribe solo `repositories/*`, sin tocar la UI.
 
-export type ProductCategory =
-  | "turismo-joven"
-  | "nacional"
-  | "brasil"
-  | "caribe"
-  | "internacional"
-  | "cruceros"
-  | "incoming"
-  | "b2b";
+// SUMMER AI es multi-negocio: cada cuenta configura su propio Business
+// (rubro.ts + vocabulario) y su catálogo usa el mismo esquema genérico de
+// Product para cualquier rubro. Lo específico del rubro (destino/hotel en
+// turismo, ingredientes en gastronomía, duración de sesión en salud, etc.)
+// vive en `atributos` — nunca como campos fijos — así el generador de
+// contenido puede citarlos sin que el modelo de datos asuma un rubro.
+
+export type Rubro =
+  | "turismo"
+  | "gastronomia"
+  | "salud-bienestar"
+  | "fitness"
+  | "belleza"
+  | "educacion"
+  | "inmobiliaria"
+  | "retail"
+  | "servicios-profesionales"
+  | "tecnologia"
+  | "otro";
+
+export interface VocabularioNegocio {
+  itemSingular: string; // "paquete" | "plato" | "servicio" | "clase" | "propiedad" | "producto"
+  itemPlural: string;
+  clienteSingular: string; // "pasajero" | "comensal" | "paciente" | "alumno" | "cliente"
+  clientePlural: string;
+}
+
+export interface Business {
+  id: string;
+  nombre: string;
+  rubro: Rubro;
+  vocabulario: VocabularioNegocio;
+  colorPrimario: string;
+  colorSecundario: string;
+  tono: string;
+  descripcion: string;
+  whatsapp?: string;
+  instagram?: string;
+  web?: string;
+  hashtags: string[];
+  logoUrl?: string;
+}
 
 export type ProductStatus = "activo" | "pausado" | "agotado";
 
 export interface Product {
   id: string;
   nombre: string;
-  categoria: ProductCategory;
-  destino: string;
-  pais: string;
-  fechaSalida: string; // ISO
-  fechaRegreso: string; // ISO
-  dias: number;
-  noches: number;
-  hotelNombre?: string;
-  tipoHabitacion?: string;
-  incluyeAereos: boolean;
-  aeropuertoSalida?: string;
-  excursionesIncluidas: string[];
-  precioVenta: number;
-  moneda: "ARS" | "USD";
-  cupos?: number;
-  fechaLimiteReserva?: string;
+  categoria: string; // libre — no atado a un rubro específico
   descripcion: string;
+  precio: number;
+  moneda: "ARS" | "USD";
+  fechaLimite?: string; // ISO — promoción, reserva o cupo con fecha límite (aplica a cualquier rubro)
+  cupos?: number; // disponibilidad limitada, si el rubro la maneja
+  atributos: Record<string, string>; // detalles propios del rubro: destino/hotel, ingredientes, duración de sesión, m2, etc.
   imagenPortada: string;
   publicoObjetivo: string[];
   estado: ProductStatus;
@@ -68,9 +91,9 @@ export interface Lead {
   email?: string;
   origen: LeadOrigin;
   instagram?: string;
-  destinoInteres?: string;
-  fechaViaje?: string; // ISO — fecha concreta que el lead mencionó, no la del catálogo
-  cantidadPasajeros?: number;
+  interesEn?: string; // lo que el lead mencionó que le interesa (un destino, un plato, una propiedad, un servicio...)
+  fechaConcreta?: string; // ISO — fecha concreta que el lead mencionó, no la del catálogo
+  cantidadPersonas?: number;
   presupuesto?: number;
   productoId?: string;
   pidioMediosPago?: boolean;

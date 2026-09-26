@@ -22,21 +22,24 @@ interface AiContentJson {
   carruselTitles?: string[];
 }
 
-function buildPrompt(pack: GeneratedContentPack, input: ContentGenerationInput): string {
+function buildPrompt(
+  pack: GeneratedContentPack,
+  input: ContentGenerationInput,
+  negocioNombre: string
+): string {
   const p = pack.producto;
-  return `Sos el copywriter de Summer Dreams Viajes, una agencia de turismo argentina, trabajando dentro de SUMMER AI.
+  const atributosTexto =
+    p.atributos.length > 0 ? p.atributos.map((a) => `- ${a.clave}: ${a.valor}`).join("\n") : "- (sin atributos cargados)";
+  return `Sos el copywriter de ${negocioNombre}, trabajando dentro de SUMMER AI.
 
-Regla no negociable: SUMMER AI nunca inventa datos de viajes. Todos los datos reales del producto ya están decididos abajo — tu único trabajo es escribir el copy creativo (hooks, captions, guion, CTA) usando EXACTAMENTE esos datos, sin agregar precios, fechas, hoteles, vuelos ni disponibilidad que no aparezcan en esta lista.
+Regla no negociable: SUMMER AI nunca inventa datos del catálogo. Todos los datos reales del ${p.itemSingular} ya están decididos abajo — tu único trabajo es escribir el copy creativo (hooks, captions, guion, CTA) usando EXACTAMENTE esos datos, sin agregar precio, fechas, disponibilidad ni atributos que no aparezcan en esta lista.
 
-DATOS REALES DEL PRODUCTO (no los cambies ni agregues otros):
+DATOS REALES DEL ${p.itemSingular.toUpperCase()} (no los cambies ni agregues otros):
 - Nombre: ${p.nombre}
-- Destino: ${p.destino}
-- Fechas: ${p.fechas === "—" ? "no cargadas" : p.fechas}
-- Duración: ${p.dias} días / ${p.noches} noches
 - Precio: ${p.precio}
-- Incluye vuelos: ${p.incluyeAereos ? "sí" : "no"}
-- Hotel: ${p.hotelNombre ?? "no cargado"}
-- Excursiones incluidas: ${p.excursiones.length > 0 ? p.excursiones.join(", ") : "ninguna cargada"}
+${atributosTexto}
+${p.fechaLimite ? `- Fecha límite: ${p.fechaLimite}` : ""}
+${p.cupos != null ? `- Cupos: ${p.cupos}` : ""}
 
 PARÁMETROS DE LA PIEZA:
 - Objetivo: ${input.objetivo}
@@ -102,9 +105,10 @@ function mergePack(pack: GeneratedContentPack, ai: AiContentJson): GeneratedCont
 
 export async function enhanceContentPackWithAI(
   pack: GeneratedContentPack,
-  input: ContentGenerationInput
+  input: ContentGenerationInput,
+  negocioNombre: string = "el negocio"
 ): Promise<{ pack: GeneratedContentPack; proveedor: string }> {
-  const prompt = buildPrompt(pack, input);
+  const prompt = buildPrompt(pack, input, negocioNombre);
   const { proveedor, texto } = await generate({ task: "texto", prompt, prioridad: "calidad" });
   const ai = parseAiJson(texto);
   return { pack: mergePack(pack, ai), proveedor };

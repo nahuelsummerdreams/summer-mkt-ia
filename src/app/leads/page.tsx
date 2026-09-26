@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { leads as initialLeads, products } from "@/lib/mock-data";
+import { useBusiness } from "@/lib/business-store";
 import { scoreLead, type LeadScoreNivel } from "@/lib/lead-scoring";
 import type { Lead, LeadStatus } from "@/lib/types";
 import { cn, formatCurrency, formatDate, whatsAppLink } from "@/lib/utils";
@@ -49,6 +50,7 @@ const FILTROS: { id: LeadScoreNivel | "todos"; label: string }[] = [
 ];
 
 export default function LeadsPage() {
+  const { business } = useBusiness();
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [filtro, setFiltro] = useState<LeadScoreNivel | "todos">("todos");
 
@@ -103,8 +105,8 @@ export default function LeadsPage() {
           {filtrados.map(({ lead, score }) => {
             const meta = NIVEL_META[score.nivel];
             const producto = products.find((p) => p.id === lead.productoId);
-            const mensaje = `Hola ${lead.nombre}! 👋 Te escribo de Summer Dreams por tu consulta${
-              lead.destinoInteres ? ` sobre ${lead.destinoInteres}` : ""
+            const mensaje = `Hola ${lead.nombre}! 👋 Te escribo de ${business.nombre} por tu consulta${
+              lead.interesEn ? ` sobre ${lead.interesEn}` : ""
             }.`;
 
             return (
@@ -116,7 +118,7 @@ export default function LeadsPage() {
                         {lead.nombre} {lead.apellido}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {lead.destinoInteres ?? "Sin destino de interés"}
+                        {lead.interesEn ?? "Sin interés declarado"}
                         {producto ? ` · ${producto.nombre}` : ""}
                       </p>
                     </div>
@@ -129,9 +131,13 @@ export default function LeadsPage() {
                   <p className="text-sm text-gray-500">{score.explicacion}</p>
 
                   <div className="flex flex-wrap gap-1.5 text-xs text-gray-500">
-                    {lead.fechaViaje && <Badge>📅 {formatDate(lead.fechaViaje)}</Badge>}
+                    {lead.fechaConcreta && <Badge>📅 {formatDate(lead.fechaConcreta)}</Badge>}
                     {lead.presupuesto && <Badge>💰 {formatCurrency(lead.presupuesto)}</Badge>}
-                    {lead.cantidadPasajeros && <Badge>👥 {lead.cantidadPasajeros} pasajero(s)</Badge>}
+                    {lead.cantidadPersonas && (
+                      <Badge>
+                        👥 {lead.cantidadPersonas} {business.vocabulario.clientePlural}
+                      </Badge>
+                    )}
                     <Badge>📍 {lead.origen}</Badge>
                   </div>
 

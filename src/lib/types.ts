@@ -81,3 +81,32 @@ export interface Lead {
   notas?: string;
   createdAt: string;
 }
+
+// Instagram/TikTok Manager (spec §12/§13). Pipeline explícito
+// BORRADOR → REVISIÓN → APROBADO → PROGRAMADO → PUBLICADO (spec §33):
+// nada se publica solo. El paso a "publicado" requiere una integración
+// real con Meta/TikTok que hoy no está conectada — ver lib/integrations.ts.
+
+export type PostPlataforma = "instagram" | "tiktok";
+export type PostFormato = "reel" | "story" | "carrusel";
+export type PostEstado = "borrador" | "revision" | "aprobado" | "programado" | "publicado";
+
+export interface Post {
+  id: string;
+  plataforma: PostPlataforma;
+  formato: PostFormato;
+  productoId: string;
+  objetivo: string;
+  publico: string;
+  tono: string;
+  estilo: string;
+  duracionReel: number;
+  hook: string;
+  caption: string;
+  hashtags: string[];
+  cta: string;
+  estado: PostEstado;
+  fechaProgramada?: string;
+  createdAt: string;
+  updatedAt: string;
+}

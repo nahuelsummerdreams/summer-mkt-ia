@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Sparkles, Copy, Check, RefreshCw, TriangleAlert, Wand2 } from "lucide-react";
+import { Sparkles, Copy, Check, RefreshCw, TriangleAlert, Wand2, CalendarPlus } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -10,6 +10,9 @@ import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { products } from "@/lib/mock-data";
+import { usePosts } from "@/lib/posts-store";
+import { uid } from "@/lib/utils";
+import type { Post, PostFormato, PostPlataforma } from "@/lib/types";
 import {
   CONTENT_OBJETIVOS,
   CONTENT_PUBLICOS,
@@ -23,6 +26,14 @@ import {
   type ContentEstilo,
   type GeneratedContentPack,
 } from "@/lib/content-generator";
+
+const FORMATO_LABEL: Record<PostFormato, string> = { reel: "Reel", story: "Stories", carrusel: "Carrusel" };
+
+function captionParaFormato(pack: GeneratedContentPack, plataforma: PostPlataforma, formato: PostFormato): string {
+  if (formato === "story") return pack.stories.map((s) => s.texto).join(" → ");
+  if (formato === "carrusel") return pack.carrusel.map((c) => c.titulo).join(" → ");
+  return plataforma === "instagram" ? pack.captions.instagram : pack.captions.tiktok;
+}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -63,7 +74,11 @@ function ContentStudioForm() {
   const [proveedorIA, setProveedorIA] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [plataformaGuardar, setPlataformaGuardar] = useState<PostPlataforma>("instagram");
+  const [formatoGuardar, setFormatoGuardar] = useState<PostFormato>("reel");
+  const [guardado, setGuardado] = useState(false);
 
+  const { addPost } = usePosts();
   const product = disponibles.find((p) => p.id === productId) ?? disponibles[0];
   const input = { objetivo, publico, tono, estilo, duracionReel };
 
@@ -97,6 +112,32 @@ function ContentStudioForm() {
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const handleGuardarComoBorrador = () => {
+    if (!pack || !product) return;
+    const now = new Date().toISOString();
+    const post: Post = {
+      id: uid("post"),
+      plataforma: plataformaGuardar,
+      formato: formatoGuardar,
+      productoId: product.id,
+      objetivo,
+      publico,
+      tono,
+      estilo,
+      duracionReel,
+      hook: pack.hooks[0] ?? "",
+      caption: captionParaFormato(pack, plataformaGuardar, formatoGuardar),
+      hashtags: pack.hashtags,
+      cta: pack.cta,
+      estado: "borrador",
+      createdAt: now,
+      updatedAt: now,
+    };
+    addPost(post);
+    setGuardado(true);
+    setTimeout(() => setGuardado(false), 2000);
   };
 
   return (
@@ -356,6 +397,40 @@ function ContentStudioForm() {
                 <RefreshCw className="h-4 w-4" />
                 Generar otra variante
               </Button>
+
+              <Card>
+                <CardBody className="space-y-3">
+                  <p className="text-sm font-bold text-navy">Guardar en el calendario de publicaciones</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Select
+                      label="Plataforma"
+                      value={plataformaGuardar}
+                      onChange={(v) => setPlataformaGuardar(v as PostPlataforma)}
+                      options={[
+                        { value: "instagram", label: "Instagram" },
+                        { value: "tiktok", label: "TikTok" },
+                      ]}
+                    />
+                    <Select
+                      label="Formato"
+                      value={formatoGuardar}
+                      onChange={(v) => setFormatoGuardar(v as PostFormato)}
+                      options={(Object.keys(FORMATO_LABEL) as PostFormato[]).map((f) => ({
+                        value: f,
+                        label: FORMATO_LABEL[f],
+                      }))}
+                    />
+                  </div>
+                  <Button onClick={handleGuardarComoBorrador} variant="secondary">
+                    <CalendarPlus className="h-4 w-4" />
+                    {guardado ? "Guardado ✓" : "Guardar como borrador"}
+                  </Button>
+                  <p className="text-xs text-gray-400">
+                    Queda como borrador en {plataformaGuardar === "instagram" ? "Instagram" : "TikTok"} — de ahí
+                    pasa por revisión y aprobación antes de programarse.
+                  </p>
+                </CardBody>
+              </Card>
             </div>
           )}
         </>

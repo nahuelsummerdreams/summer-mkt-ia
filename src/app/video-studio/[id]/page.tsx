@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Clapperboard, Play, Loader2, CheckCircle2, XCircle, TriangleAlert } from "lucide-react";
+import { Clapperboard, Play, Loader2, CheckCircle2, XCircle, TriangleAlert, Mic } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -27,18 +27,27 @@ export default function VideoProjectPage() {
   const { influencers } = useInfluencers();
   const proyecto = proyectos.find((p) => p.id === params.id);
   const [jobsPorEscena, setJobsPorEscena] = useState<Record<string, GenerationJob>>({});
+  const [vozJobsPorEscena, setVozJobsPorEscena] = useState<Record<string, GenerationJob>>({});
   const [generando, setGenerando] = useState<string | null>(null);
+  const [generandoVoz, setGenerandoVoz] = useState<string | null>(null);
 
   const cargarJobs = () => {
     if (!proyecto) return;
     fetch(`/api/video-studio/jobs?proyectoId=${proyecto.id}`)
       .then((r) => r.json())
       .then((data) => {
-        const mapa: Record<string, GenerationJob> = {};
+        const mapaVideo: Record<string, GenerationJob> = {};
+        const mapaVoz: Record<string, GenerationJob> = {};
         (data.jobs ?? []).forEach((j: GenerationJob) => {
-          if (j.escenaId && !mapa[j.escenaId]) mapa[j.escenaId] = j;
+          if (!j.escenaId) return;
+          if (j.tipo === "voz") {
+            if (!mapaVoz[j.escenaId]) mapaVoz[j.escenaId] = j;
+          } else if (!mapaVideo[j.escenaId]) {
+            mapaVideo[j.escenaId] = j;
+          }
         });
-        setJobsPorEscena(mapa);
+        setJobsPorEscena(mapaVideo);
+        setVozJobsPorEscena(mapaVoz);
       });
   };
 
@@ -73,6 +82,21 @@ export default function VideoProjectPage() {
     }
   };
 
+  const handleGenerarVoz = async (escenaId: string, dialogo: string) => {
+    setGenerandoVoz(escenaId);
+    try {
+      const res = await fetch("/api/video-studio/jobs", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tipo: "voz", proyectoId: proyecto.id, escenaId, texto: dialogo }),
+      });
+      const data = await res.json();
+      setVozJobsPorEscena((prev) => ({ ...prev, [escenaId]: data.job }));
+    } finally {
+      setGenerandoVoz(null);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">
       <div>
@@ -94,6 +118,7 @@ export default function VideoProjectPage() {
         {proyecto.escenas.map((escena) => {
           const job = jobsPorEscena[escena.id];
           const Icono = job ? ESTADO_ICONO[job.estado] : Play;
+          const vozJob = vozJobsPorEscena[escena.id];
           return (
             <Card key={escena.id}>
               <CardBody className="space-y-2">
@@ -123,10 +148,31 @@ export default function VideoProjectPage() {
                   </div>
                 )}
 
-                <Button size="sm" variant="secondary" onClick={() => handleGenerar(escena.id)} disabled={generando === escena.id}>
-                  {generando === escena.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
-                  {job ? "Regenerar escena" : "Generar escena"}
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" variant="secondary" onClick={() => handleGenerar(escena.id)} disabled={generando === escena.id}>
+                    {generando === escena.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
+                    {job ? "Regenerar escena" : "Generar escena"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleGenerarVoz(escena.id, escena.dialogo)}
+                    disabled={generandoVoz === escena.id}
+                  >
+                    {generandoVoz === escena.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mic className="h-3.5 w-3.5" />}
+                    {vozJob?.estado === "completed" ? "Regenerar voz" : "Generar voz"}
+                  </Button>
+                </div>
+
+                {vozJob && vozJob.estado === "completed" && vozJob.resultUrl && (
+                  <audio controls src={vozJob.resultUrl} className="h-9 w-full" />
+                )}
+                {vozJob && vozJob.estado === "failed" && (
+                  <p className="flex items-start gap-1.5 rounded-xl bg-amber-50 p-2 text-xs text-amber-700">
+                    <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    {vozJob.error}
+                  </p>
+                )}
               </CardBody>
             </Card>
           );

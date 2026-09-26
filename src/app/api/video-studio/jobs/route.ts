@@ -9,7 +9,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  let body: { tipo?: GenerationJobTipo; proyectoId?: string; escenaId?: string };
+  let body: { tipo?: GenerationJobTipo; proyectoId?: string; escenaId?: string; texto?: string; voiceId?: string };
   try {
     body = await req.json();
   } catch {
@@ -20,6 +20,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Faltan campos requeridos: tipo, proyectoId." }, { status: 400 });
   }
 
-  const job = requestGeneration(body.tipo, body.proyectoId, body.escenaId);
+  const job = await requestGeneration(body.tipo, body.proyectoId, body.escenaId, {
+    texto: body.texto,
+    voiceId: body.voiceId,
+  });
   return NextResponse.json({ job });
 }

@@ -9,7 +9,7 @@ const ACCIONES = [
   { href: "/campanas", label: "Crear campaña", icon: Rocket, desc: "Objetivo, fecha límite y presupuesto → estrategia, KPIs y calendario" },
   { href: "/productos", label: "Ver productos", icon: Package, desc: "Catálogo turístico — fuente de verdad de la IA" },
   { href: "/leads", label: "Gestionar leads", icon: Users, desc: "CRM con lead scoring HOT/WARM/COLD explicado" },
-  { href: "/analytics", label: "Analizar resultados", icon: BarChart3, desc: "Próximamente" },
+  { href: "/analytics", label: "Analizar resultados", icon: BarChart3, desc: "Comercial, negocio, marketing y contenido en un solo lugar" },
   { href: "/summer-brain", label: "Ver resumen de hoy", icon: Brain, desc: "Leads prioritarios, alertas y qué producto impulsar" },
 ];
 
